@@ -46,8 +46,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start><br/>"
-        f"/api/v1.0/<start>/<end>"
+        f"/api/v1.0/startdate:/<start><br/>"
+        f"/api/v1.0/startdate:/<start>/enddate:/<end>"
     )
 
 @app.route("/api/v1.0/precipitation")
@@ -77,7 +77,50 @@ def stations():
 
     return jsonify(stations)
 
+@app.route("/api/v1.0/tobs")
+def active():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
 
+    # Query all passengers
+    results=session.query(Measurement.station, Measurement.date, Measurement.tobs).\
+        filter(Measurement.date>one_year).\
+        filter(Measurement.station=="USC00519281").all()
+    session.close()
+    # Convert list of tuples into normal list
+    active = list(np.ravel(results))
+
+    return jsonify(active)
+
+# @app.route("/api/v1.0/startdate:/<start>")
+# def startdate(start):
+#     # Create our session (link) from Python to the DB
+#     session = Session(engine)
+
+#     # Query all passengers
+#     results=session.query(Measurement.station, Measurement.date, Measurement.tobs).\
+#         filter(Measurement.date>one_year).\
+#         filter(Measurement.station=="USC00519281").all()
+#     session.close()
+#     # Convert list of tuples into normal list
+#     startdate = list(np.ravel(results))
+
+#     return jsonify(active)
+
+# @app.route("/api/v1.0/startdate:/<start>/enddate:/<end>")
+# def active():
+#     # Create our session (link) from Python to the DB
+#     session = Session(engine)
+
+#     # Query all passengers
+#     results=session.query(Measurement.station, Measurement.date, Measurement.tobs).\
+#         filter(Measurement.date>one_year).\
+#         filter(Measurement.station=="USC00519281").all()
+#     session.close()
+#     # Convert list of tuples into normal list
+#     active = list(np.ravel(results))
+
+#     return jsonify(active)
 
 if __name__ == '__main__':
     app.run(debug=True)
