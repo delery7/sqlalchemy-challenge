@@ -1,14 +1,15 @@
+import numpy as np
+import pandas as pd
+import datetime as dt
+
+import sqlalchemy
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine, func
+
 from flask import Flask, jsonify
 
-justice_league_members = [
-    {"superhero": "Aquaman", "real_name": "Arthur Curry"},
-    {"superhero": "Batman", "real_name": "Bruce Wayne"},
-    {"superhero": "Cyborg", "real_name": "Victor Stone"},
-    {"superhero": "Flash", "real_name": "Barry Allen"},
-    {"superhero": "Green Lantern", "real_name": "Hal Jordan"},
-    {"superhero": "Superman", "real_name": "Clark Kent/Kal-El"},
-    {"superhero": "Wonder Woman", "real_name": "Princess Diana"}
-]
+
 
 #################################################
 # Flask Setup
@@ -17,46 +18,70 @@ app = Flask(__name__)
 
 
 #################################################
+# Database Setup
+#################################################
+engine = create_engine("sqlite:///hawaii.sqlite")
+
+# reflect an existing database into a new model
+Base = automap_base()
+# reflect the tables
+Base.prepare(engine, reflect=True)
+
+# Save reference to the table
+Station = Base.classes.station
+Measurement= Base.classes.measurement
+latest_date=dt.date(2017,8,23)
+delta=dt.timedelta(days=365)
+one_year=latest_date-delta
+
+#################################################
 # Flask Routes
 #################################################
 
-@app.route("/api/v1.0/justice-league/")
-def justice_league():
-    """Return the justice league data as json"""
-
-    return jsonify(justice_league_members)
-
-
 @app.route("/")
 def welcome():
+    """List all available api routes."""
     return (
-        f"Welcome to the Justice League API!<br/>"
         f"Available Routes:<br/>"
-        f"/api/v1.0/justice-league<br/>"
-        f"/api/v1.0/justice-league/Arthur%20Curry<br/>"
-        f"/api/v1.0/justice-league/Bruce%20Wayne<br/>"
-        f"/api/v1.0/justice-league/Victor%20Stone<br/>"
-        f"/api/v1.0/justice-league/Barry%20Allen<br/>"
-        f"/api/v1.0/justice-league/Hal%20Jordan<br/>"
-        f"/api/v1.0/justice-league/Clark%20Kent/Kal-El<br/>"
-        f"/api/v1.0/justice-league/Princess%20Diana"
+        f"/api/v1.0/precipitation<br/>"
+        f"/api/v1.0/stations<br/>"
+        f"/api/v1.0/tobs<br/>"
+        f"/api/v1.0/<start><br/>"
+        f"/api/v1.0/<start>/<end>"
     )
 
+@app.route("/api/v1.0/precipitation")
+def date_prcp():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
 
-@app.route("/api/v1.0/justice-league/<real_name>")
-def justice_league_character(real_name):
-    """Fetch the Justice League character whose real_name matches
-       the path variable supplied by the user, or a 404 if not."""
+    # Query all dates and precipitation measurements
+    results=session.query(Measurement.date,Measurement.prcp).filter(Measurement.date>one_year).all()
+    session.close()
 
-    canonicalized = real_name.replace(" ", "").lower() #.replace(" ","") removes extra spaces
-    for character in justice_league_members:
-        search_term = character["real_name"].replace(" ", "").lower()
+    # Convert list of tuples into normal list
+    date_prcp = list(np.ravel(results))
 
-        if search_term == canonicalized:
-            return jsonify(character)
+    return jsonify(date_prcp)
 
-    return jsonify({"error": f"Character with real_name {real_name} not found."}), 404
+@app.route("/api/v1.0/stations")
+def stations():
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    # Query all passengers
+    results=session.query(Station.name).filter(Measurement.station==Station.station).group_by(Measurement.station).all()
+    session.close()
+    # Convert list of tuples into normal list
+    stations = list(np.ravel(results))
+
+    return jsonify(stations)
 
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     app.run(debug=True)
+
+
+
+
