@@ -30,6 +30,7 @@ Base.prepare(engine, reflect=True)
 # Save reference to the table
 Station = Base.classes.station
 Measurement= Base.classes.measurement
+# getting the latest date and one year back
 latest_date=dt.date(2017,8,23)
 delta=dt.timedelta(days=365)
 one_year=latest_date-delta
@@ -69,7 +70,7 @@ def stations():
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    # Query all passengers
+    # Query for stations
     results=session.query(Station.name).filter(Measurement.station==Station.station).group_by(Measurement.station).all()
     session.close()
     # Convert list of tuples into normal list
@@ -82,7 +83,7 @@ def active():
     # Create our session (link) from Python to the DB
     session = Session(engine)
 
-    # Query all passengers
+    # Query for the active station data
     results=session.query(Measurement.station, Measurement.date, Measurement.tobs).\
         filter(Measurement.date>one_year).\
         filter(Measurement.station=="USC00519281").all()
