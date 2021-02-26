@@ -93,20 +93,21 @@ def active():
 
     return jsonify(active)
 
-# @app.route("/api/v1.0/startdate:/<start>")
-# def startdate(start):
-#     # Create our session (link) from Python to the DB
-#     session = Session(engine)
+@app.route("/api/v1.0/startdate:/<start>")
+def startdate(start):
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+    start = dt.datetime.strptime(start, '%Y-%m-%d')
+    # end = dt.datetime.strptime(start, '%Y-%m-%d')   
+    # Query for start date
+    results=session.query(func.min(Measurement.tobs),func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+        filter(Measurement.date>start).all()
+    session.close()
+    # Convert list of tuples into normal list
+    startdate = list(np.ravel(results))
+      
+    return jsonify(startdate)
 
-#     # Query all passengers
-#     results=session.query(Measurement.station, Measurement.date, Measurement.tobs).\
-#         filter(Measurement.date>one_year).\
-#         filter(Measurement.station=="USC00519281").all()
-#     session.close()
-#     # Convert list of tuples into normal list
-#     startdate = list(np.ravel(results))
-
-#     return jsonify(active)
 
 # @app.route("/api/v1.0/startdate:/<start>/enddate:/<end>")
 # def active():
