@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import datetime as dt
+import json
 
 import sqlalchemy
 from sqlalchemy.ext.automap import automap_base
@@ -97,15 +98,19 @@ def active():
 def startdate(start):
     # Create our session (link) from Python to the DB
     session = Session(engine)
-    start = dt.datetime.strptime(start, '%Y-%m-%d')
+    # start = dt.datetime.strptime(start, '%Y-%m-%d')
     # end = dt.datetime.strptime(start, '%Y-%m-%d')   
     # Query for start date
-    results=session.query(func.min(Measurement.tobs),func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
-        filter(Measurement.date>start).all()
+    inter=[func.min(Measurement.tobs),func.avg(Measurement.tobs), func.max(Measurement.tobs)]
+    results=session.query(*inter).\
+        filter(Measurement.date>=start).all()
+    # print(results)
     session.close()
     # Convert list of tuples into normal list
+    # results2=json.dumps(results)
     startdate = list(np.ravel(results))
-      
+    # startdate = np.ravel(results)
+    # print(startdate)
     return jsonify(startdate)
 
 
