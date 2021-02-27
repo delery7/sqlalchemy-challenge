@@ -1,4 +1,9 @@
-# SQLAlchemy Homework - Surfs Up!
+# SQLAlchemy Homework
+This homework and the files used are explained below.
+
+Resources - File with the SQLite and Excel data source files
+climate_analysis.ipynb - All analysis and query development was started and completed in this file
+app.py - used to present the query outcomes in a flask application for different json api calls on the data
 
 ### Precipitation Analysis
 
@@ -44,6 +49,7 @@
 ## Step 2 - Climate App
 
 Now that you have completed your initial analysis, design a Flask API based on the queries that you have just developed.
+This is done in the app.py file
 
 * Use Flask to create your routes.
 

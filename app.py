@@ -130,7 +130,7 @@ def startend(start,end):
     start = dt.datetime.strptime(start, '%m-%d-%Y')
     end = dt.datetime.strptime(end, '%m-%d-%Y')   
     
-    # Query for data from the user defined start date
+    # Query for data from the user defined start and end dates
     inter=[func.min(Measurement.tobs),func.avg(Measurement.tobs), func.max(Measurement.tobs)]
     results=session.query(*inter).\
         filter(Measurement.date>=start).filter(Measurement.date<=end).all()
@@ -138,7 +138,6 @@ def startend(start,end):
     session.close()
 
     # Convert list of tuples into normal list
-
     startend = list(np.ravel(results))
     
     return jsonify(startend)
